@@ -132,7 +132,7 @@ if($mod=='site'){
 	  <label class="col-sm-2 control-label">公共静态资源CDN</label>
 	  <div class="col-sm-10"><select class="form-control" name="cdnpublic" default="<?php echo $conf['cdnpublic']?>">
 	  <option value="0">七牛云CDN</option>
-	  <option value="1">360CDN</option>
+	  <option value="1">zstatic</option>
 	  <option value="2">BootCDN</option>
 	  <option value="4">今日头条CDN</option>
 	  </select></div>

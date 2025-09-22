@@ -91,7 +91,7 @@ if (!file_exists(ROOT.'install/install.lock') && file_exists(ROOT.'install/index
 }
 
 if($conf['cdnpublic']==1){
-	$cdnpublic = '//lib.baomitu.com/';
+	$cdnpublic = '//s4.zstatic.net/ajax/libs/';
 }elseif($conf['cdnpublic']==2){
 	$cdnpublic = 'https://cdn.bootcdn.net/ajax/libs/';
 }elseif($conf['cdnpublic']==4){
