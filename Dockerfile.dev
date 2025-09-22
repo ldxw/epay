@@ -55,6 +55,14 @@ COPY ${APP_SRC_DIR}/ /usr/src/www/
 
 RUN adduser -D -s /sbin/nologin -g www www && chown -R www.www /usr/src/www /var/lib/nginx /var/log/nginx
 
+# ---- 确保 crond 可用（busybox 自带；若缺则装 dcron），准备 crontab 根目录 ----
+RUN [ -x /usr/sbin/crond ] || apk add --no-cache dcron \
+ && ln -sf /usr/sbin/crond /usr/bin/crond \
+ && addgroup -S crontab || true \
+ && mkdir -p /var/spool/cron/crontabs \
+ && chown root:crontab /var/spool/cron/crontabs \
+ && chmod 1730 /var/spool/cron/crontabs
+
 # 内置一份“成品” crontab（内网 HTTP 调用；按天写日志；BusyBox 需转义 %）
 RUN mkdir -p /usr/src/cron \
  && cat > /usr/src/cron/www <<'CRON'
@@ -71,6 +79,6 @@ RUN chmod +x /entrypoint.sh
 # 开放端口
 EXPOSE 80
 
-# 只保留 ENTRYPOINT，CMD 留空（或干脆不写）
+# 交由 entrypoint 启动 crond + supervisord
 ENTRYPOINT ["sh", "/entrypoint.sh"]
 CMD []
