@@ -10,7 +10,7 @@ on:
       dockerfile:
         description: 'Dockerfile 路径（相对仓库根）'
         required: true
-        default: 'Dockerfile'
+        default: 'Dockerfile.dev'
       image_name:
         description: 'Docker Hub 镜像名（含命名空间）'
         required: true
@@ -18,7 +18,7 @@ on:
       entrypoint_sh:
         description: '入口脚本（相对仓库根）。默认 entrypoint.sh'
         required: true
-        default: 'entrypoint.sh'
+        default: 'entrypoint.dev.sh'
 
 permissions:
   contents: read
