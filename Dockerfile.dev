@@ -71,8 +71,9 @@ RUN mkdir -p /usr/src/cron \
 CRON
 
 # 复制 entrypoint 脚本
-COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+ARG ENTRYPOINT_FILE=entrypoint.sh
+COPY ${ENTRYPOINT_FILE} /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # 开放端口
 EXPOSE 80
