@@ -55,19 +55,15 @@ COPY ${APP_SRC_DIR}/ /usr/src/www/
 
 RUN adduser -D -s /sbin/nologin -g www www && chown -R www.www /usr/src/www /var/lib/nginx /var/log/nginx
 
-# -----------------------
-# Cron: 默认备份模板（php CLI 执行 cron.php）
-# -----------------------
-# 模板使用占位符 __CRON_KEY__，entrypoint 启动时会替换成真实的 cronkey
-ENV CRON_KEY=""
+# 内置一份“成品” crontab（内网 HTTP 调用；按天写日志；BusyBox 需转义 %）
 RUN mkdir -p /usr/src/cron \
- && cat > /usr/src/cron/www.tpl <<'CRON'
-# 1) 订单统计：每日 00:01 执行一次
-1 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=order&key=311725", $_GET); include "cron.php";' >> /var/log/cron/order-$(/bin/date +\%F).log 2>&1
-# 2) 自动生成结算：每日 00:2 执行一次
-2 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=settle&key=311725", $_GET); include "cron.php";' >> /var/log/cron/settle-$(/bin/date +\%F).log 2>&1
-# 3) 订单异步通知重试：每分钟执行一次
-* * * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=notify&key=311725", $_GET); include "cron.php";' >> /var/log/cron/notify-$(/bin/date +\%F).log 2>&1
+ && cat > /usr/src/cron/www <<'CRON'
+# 1) 订单统计：每日 00:05
+5 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/curl -fsS --max-time 30 "http://127.0.0.1/cron.php?do=order&key=494265" >> /var/log/cron/order-$(/bin/date +\%F).log 2>&1
+# 2) 自动生成结算：每日 00:10
+10 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/curl -fsS --max-time 30 "http://127.0.0.1/cron.php?do=settle&key=494265" >> /var/log/cron/settle-$(/bin/date +\%F).log 2>&1
+# 3) 异步通知重试：每分钟
+* * * * * /bin/mkdir -p /var/log/cron && /usr/bin/curl -fsS --max-time 30 "http://127.0.0.1/cron.php?do=notify&key=494265" >> /var/log/cron/notify-$(/bin/date +\%F).log 2>&1
 CRON
 
 # 复制 entrypoint 脚本
