@@ -12,13 +12,17 @@ on:
         required: true
         default: 'Dockerfile'
       image_name:
-        description: '镜像名（含命名空间）'
+        description: 'Docker Hub 镜像名（含命名空间）'
         required: true
         default: 'ldxw/epay-2024'
+      entrypoint_sh:
+        description: '入口脚本（相对仓库根）。默认 entrypoint.sh'
+        required: true
+        default: 'entrypoint.sh'
 
 permissions:
   contents: read
-  packages: write  # 需要往 GHCR 推送
+  packages: write
 
 jobs:
   build:
@@ -66,6 +70,7 @@ jobs:
           push: true
           build-args: |
             APP_SRC_DIR=${{ inputs.app_dir }}
+            ENTRYPOINT_FILE=${{ inputs.entrypoint_sh }}
           tags: |
             ${{ inputs.image_name }}:latest
             ${{ inputs.image_name }}:${{ steps.vars.outputs.ts }}
