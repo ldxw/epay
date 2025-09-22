@@ -97,6 +97,6 @@ if($conf['cdnpublic']==1){
 }elseif($conf['cdnpublic']==4){
 	$cdnpublic = '//lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/';
 }else{
-	$cdnpublic = '//cdn.staticfile.org/';
+	$cdnpublic = '//s4.zstatic.net/ajax/libs/';
 }
 ?>
