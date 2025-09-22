@@ -22,6 +22,10 @@ mkdir -p /var/spool/cron/crontabs
 chown root:crontab /var/spool/cron/crontabs
 chmod 1730 /var/spool/cron/crontabs
 
+mkdir -p /var/log/cron
+chown www:root /var/log/cron
+chmod 755 /var/log/cron
+
 CRON_DIR="/var/spool/cron/crontabs"
 SRC="/usr/src/cron/www"   # 现在直接用“成品”而不是 .tpl
 DST="$CRON_DIR/www"
