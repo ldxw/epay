@@ -2,6 +2,7 @@
 set -e
 
 is_empty_dir() {
+  # 不存在视为空；存在但没有任何可见文件也为空
   [ ! -d "$1" ] && return 0
   [ -z "$(ls -A "$1" 2>/dev/null)" ]
 }
@@ -45,6 +46,20 @@ detect_cron_key() {
   return 0
 }
 
+render_cron() {
+  CK="$1"
+  TPL="$2"
+  OUT="$3"
+  # 用 PHP 做安全替换，避免 sed 分隔符/转义问题
+  /usr/bin/php82 -r '
+    $ck = $argv[1];
+    $tpl = @file_get_contents($argv[2]);
+    if ($tpl === false) { fwrite(STDERR, "[error] Failed to read template\n"); exit(1); }
+    $out = str_replace("__CRON_KEY__", $ck, $tpl);
+    if (@file_put_contents($argv[3], $out) === false) { fwrite(STDERR, "[error] Failed to write cron file\n"); exit(1); }
+  ' "$CK" "$TPL" "$OUT"
+}
+
 # 1) 应用目录初始化：若 /app/www 为空，则从内置备份 /usr/src/www 拷贝
 if is_empty_dir /app/www; then
   echo "[init] /app/www is empty. Seeding from /usr/src/www ..."
@@ -67,11 +82,11 @@ if [ ! -s "$OUT" ] && [ -f "$TPL" ]; then
     echo "[warn] 未能自动探测到 \$conf['cronkey']；将写入空 key（任务会因 key 不匹配而不生效）。"
     echo "[hint] 可通过 -e CRON_KEY=实际值 覆盖，或保证配置文件可被检测到。"
   else
-    echo "[init] 检测到 cronkey: $CK"
+    # 为安全不直接打印明文，可按需改为 echo "$CK"
+    echo "[init] 检测到 cronkey（长度 ${#CK}）"
   fi
 
-  # 用 # 作为 sed 分隔符，避免 key 中可能包含 / 造成冲突
-  sed "s#__CRON_KEY__#${CK}#g" "$TPL" > "$OUT"
+  render_cron "$CK" "$TPL" "$OUT"
   chown www:root "$OUT"
   chmod 600 "$OUT"
 else
