@@ -63,11 +63,11 @@ ENV CRON_KEY=""
 RUN mkdir -p /usr/src/cron \
  && cat > /usr/src/cron/www.tpl <<'CRON'
 # 1) 订单统计：每日 00:01 执行一次
-1 0 * * * /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=order&key=__CRON_KEY__", $_GET); include "cron.php";'
+1 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=order&key=311725", $_GET); include "cron.php";' >> /var/log/cron/order-$(/bin/date +\%F).log 2>&1
 # 2) 自动生成结算：每日 00:2 执行一次
-2 0 * * * /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=settle&key=__CRON_KEY__", $_GET); include "cron.php";'
+2 0 * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=settle&key=311725", $_GET); include "cron.php";' >> /var/log/cron/settle-$(/bin/date +\%F).log 2>&1
 # 3) 订单异步通知重试：每分钟执行一次
-* * * * * /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=notify&key=__CRON_KEY__", $_GET); include "cron.php";'
+* * * * * /bin/mkdir -p /var/log/cron && /usr/bin/php82 -r 'if(!isset($_SERVER["HTTP_USER_AGENT"]))$_SERVER["HTTP_USER_AGENT"]="CLI"; chdir("/app/www"); parse_str("do=notify&key=311725", $_GET); include "cron.php";' >> /var/log/cron/notify-$(/bin/date +\%F).log 2>&1
 CRON
 
 # 复制 entrypoint 脚本
